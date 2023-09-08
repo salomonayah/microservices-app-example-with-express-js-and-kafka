@@ -1,4 +1,4 @@
-version: "2.19"
+version: "3.8"
 services:
   zookeeper:
     container_name: zookeeper
@@ -20,13 +20,19 @@ services:
   mongo:
     container_name: mongo
     image: mongo
+    restart: always
     ports:
       - 27017:27017
     volumes:
       - ./data/mongo:/data/db
+    # environment:
+    #   MONGO_INITDB_DATABASE: mongo-app-two
+    #   MONGO_INITDB_ROOT_USERNAME: mongo-user
+    #   MONGO_INITDB_ROOT_PASSWORD: mongo-pwd
 
   postgres:
     container_name: postgres
+    image: postgres
     ports:
       - 5432:5432
     volumes:
@@ -46,25 +52,25 @@ services:
     environment:
       - PORT=8080
       - POSTGRES_URL=postgres://postgres:postgres@postgres:5432/postgres
-      - KAFKA_BOOTSTRAP_URL=kafka:9092
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - KAFKA_TOPIC=topic1
     depends_on:
       - postgres
       - kafka
 
   app2:
-    container_name: app1
-    build: ./app1
+    container_name: app2
+    build: ./app2
     ports:
       - 8081:8080
     volumes:
       - ./app2:/app
     environment:
       - PORT=8080
-      - MONGO_URL=mongodb://mongo:27017/app2
-      - KAFKA_BOOTSTRAP_URL=kafka:9092
+      # - MONGO_URL=mongodb://mongo-user:mongo-pwd@mongo:27017/mongo-app-two
+      - MONGO_URL=mongodb://mongo:27017/mongo-app-two
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - KAFKA_TOPIC=topic1
     depends_on:
       - mongo
       - kafka
-    
